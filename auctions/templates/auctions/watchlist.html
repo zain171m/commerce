@@ -1,0 +1,34 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    <h2>Watchlist Items</h2>
+    {% if active_listings %}
+    <div class="container mt-4">
+        {% for listing in active_listings %}
+        <div class="row mb-4">
+            {% if listing.list.picture %}
+            <div class="col-md-3">
+                <img src="{{ listing.list.picture }}" class="img-fluid" alt="Listing Image">
+            </div>
+            {% endif %}
+            <div class="{% if listing.list.picture %}col-md-9{% else %}col-md-12{% endif %}">
+                <div class="row">
+                    <div class="col-md-8">
+                        <a href="{% url 'item' listing.list.id %}"><h3>{{ listing.list.item }}</h3></a>
+                        <p>{{ listing.list.description }}</p>
+                        <p>Price: ${{ listing.list.price }}</p>
+                        <p>Date/Time: {{ listing.list.posted_at }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% endfor %}
+
+        {% else %}
+        <p>No watchlisted items</p>
+        {% endif %}
+    </div>
+
+
+{% endblock %}

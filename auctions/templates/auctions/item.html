@@ -1,0 +1,148 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+
+{% if alert_message %}
+<div id="alertMessage" class="alert alert-primary" role="alert" style="display: none;">
+            {{alert_message}} 
+          </div>
+{% endif %}
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    // Function to show the alert and then hide it after a specified time (in milliseconds)
+    function showAlertForShortTime() {
+        const alertMessage = document.getElementById('alertMessage');
+        alertMessage.style.display = 'block';
+
+        // Change the duration (in milliseconds) to control how long the alert should be shown
+        const duration = 3000; // 3000 milliseconds = 3 seconds
+
+        setTimeout(() => {
+            alertMessage.style.display = 'none';
+        }, duration);
+    }
+
+    // Call the function to show the alert message
+    showAlertForShortTime();
+</script>
+<div class="row mb-4">
+    {% if listing.picture %}
+    <div class="col-md-3">
+        <img src="{{ listing.picture }}" class="img-fluid" alt="Listing Image">
+    </div>
+    {% endif %}
+    <div class="{% if listing.picture %}col-md-9{% else %}col-md-12{% endif %}">
+        <div class="row">
+            <div class="col-md-8">
+                <h3>{{ listing.item }}</h3>
+                <p>{{ listing.description }}</p>
+                <p>Price: ${{ listing.price }}</p>
+                <p>Date/Time: {{ listing.posted_at }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% if listing.active_status == True%}
+{% if user.is_authenticated %}
+<p>{{ bid_count }}bid(s) so far.Your bid is current bid.</p>
+<form method="post" action="{% url 'bid' %}">
+    {% csrf_token %}
+    <div class="form-group">
+        <input autofocus class="form-control" type="text" name="Bid" placeholder="Bid">
+        <input type="hidden" name="auction_id" value="{{ listing.id }}">
+    </div>
+    <button type = "submit", class="btn btn-primary btn-lg">Place Bid</button>
+</form>
+<h2 style="margin-top: 20px;">Details</h2>
+<ul>
+    <li>Listed By : {{listing.user}}</li>
+    <li>Category : {{listing.category}}
+</ul>
+{% if not watchlist %}
+<div style = "margin-top: 20px;">
+    <form method="post" action="{% url 'watchlist' %}">
+        {% csrf_token %}
+        <input type="hidden" name="in_watchlist" value="False">
+        <input type="hidden" name="auction_id" value="{{ listing.id }}">
+        <button type = "submit" class="btn btn-primary btn-lg">Add to Watchlist</button>
+    </form>
+</div>
+
+{% else %}
+<div style = "margin-top: 20px;">
+    <form method="post" action="{% url 'watchlist' %}">
+        {% csrf_token %}
+        <input type="hidden" name="in_watchlist" value="True">
+        <input type="hidden" name="auction_id" value="{{ listing.id }}">
+        <button type = "submit" class="btn btn-primary btn-lg">Remove from Watchlist</button>
+    </form>
+</div>
+{% endif %}
+
+{% if user ==  listing.user %}
+<form method="post" action="{% url 'index' %}">
+    {% csrf_token %}
+<div style = "margin-top: 20px;">
+    <input type="hidden" name="auction_id" value="{{ listing.id }}">
+    <button type = "submit" class="btn btn-primary btn-lg">Close The Listing</button>
+</div>
+</form>
+{% endif %}
+
+<p style="margin-top: 20px;">comment(s) so far</p>
+<form method="post" action="{% url 'item' listing.id %}">
+    {% csrf_token %}
+    <div class="form-group">
+        <input autofocus class="form-control" type="text" name="Comment" placeholder="Comment">
+    </div>
+    <button type = "submit", class="btn btn-primary btn-lg">Post Comment</button>
+</form>
+<!--<div class="container mt-5"> -->
+    {% endif %}
+    {% elif winner == request.user %}
+        
+    <!-- Congratulations area start -->
+    
+                <div class="congratulation-contents center-text">
+                    
+                    <h4 class="congratulation-contents-title"> Congratulations! </h4>
+                    <p class="congratulation-contents-para"> Congratulation You have won this Auction </p>
+                    <div class="btn-wrapper mt-4">
+                        <a href="{% url 'index' %}" class="cmn-btn btn-bg-1"> Go to Active Listing </a>
+                    </div>
+                </div>
+    
+    <!-- Congratulations area end -->
+
+<!-- Latest compiled JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    {% endif %}
+<h2 style="margin-top: 20px;">Comments</h2>
+<div class="row">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-body">
+          {% for comment in comments %}
+          <div class="media mb-3">
+            <div class="media-body">
+              <h5 class="mt-0">{{ comment.user }}</h5>
+              <p>{{ comment.text }}</p>
+              <small class="text-muted">{{ comment.created_at }}</small>
+              {% if request.user == comment.user %}s
+              <form method="post" action="{% url 'item' listing.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="comment_id" value="{{ comment.id }}">
+                <span class="delete-btn"><button type="submit" class="btn btn-danger">Delete</button></span>
+              </form>
+                {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+{% endblock %}
